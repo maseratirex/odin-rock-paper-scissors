@@ -3,7 +3,8 @@ beats.set("rock", "scissors");
 beats.set("paper", "rock");
 beats.set("scissors", "paper");
 
-let netScore = 0;
+let playerScore = 0;
+let computerScore = 0;
 
 function getComputerChoice() {
     let randomChoice = Math.floor(Math.random() * 3); //Returns 0, 1, 2 uniformly
@@ -23,30 +24,57 @@ function playRound(playerSelection, computerSelection){
     playerSelection = playerSelection.toLowerCase();
     computerSelection = computerSelection.toLowerCase();
     if(playerSelection === computerSelection){
-        return "Tied! You both chose " + playerSelection;
+        return 0;
     } else if(beats.get(playerSelection) === computerSelection){
-        netScore++;
-        return "You win! " + playerSelection + " beats " + computerSelection;
+        return 1;
     } else {
-        netScore--;
-        return "You lose! " + computerSelection + " beats " + playerSelection;
+        return -1;
     }
 }
 
-function game(){
-    for (let round = 0; round < 5; round++) {
-        console.log(`Round ${round + 1}...`)
-        let playerSelection = prompt("Rock, paper, or scissors?")
-        let computerSelection = getComputerChoice();
-        console.log(playRound(playerSelection, computerSelection))
-    }
-    if(netScore === 0){
-        console.log("You both tied!")
-    } else if(netScore < 0){
-        console.log("You lost!")
-    } else {
-        console.log("You won!")
+let game = function(){
+    let playerSelection = this.getAttribute("data-selection");
+    let computerSelection = getComputerChoice();
+    let roundResult = playRound(playerSelection, computerSelection);
+    if (roundResult < 0) {
+        computer.classList.add("won");
+        setTimeout(() => {
+            computer.classList.remove("won");
+        }, 1000);
+        computer.textContent = `${++computerScore}`;
+
+        if (computerScore > 4) {
+            const computerVictoryDiv = document.createElement("div");
+            computerVictoryDiv.textContent = "You lost."
+            body.appendChild(computerVictoryDiv);
+            
+            buttons.forEach((btn) => {
+                btn.removeEventListener("click", game);
+            })
+        }
+    } else if (roundResult > 0) {
+        player.classList.add("won");
+        setTimeout(() => {
+            player.classList.remove("won");
+        }, 1000);
+        player.textContent = `${++playerScore}`;
+
+        if (playerScore > 4) {
+            const playerVictoryDiv = document.createElement("div");
+            playerVictoryDiv.textContent = "You won!"
+            body.appendChild(playerVictoryDiv);
+            
+            buttons.forEach((btn) => {
+                btn.removeEventListener("click", game);
+            })
+        }
     }
 }
 
-game();
+const buttons = document.querySelectorAll("button");
+const player = document.querySelector(".player-score");
+const computer = document.querySelector(".computer-score");
+const body = document.querySelector("body");
+buttons.forEach((btn) => {
+    btn.addEventListener("click", game);
+})
